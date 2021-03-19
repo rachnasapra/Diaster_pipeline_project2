@@ -38,13 +38,13 @@ import pickle
 
 
 def load_data(database_filepath):
-   # load data from database
-   engine = create_engine('sqlite:/// DisasterResponse.db')
-   df = pd.read_sql_table('message_categorys', engine)
-   X = df["message"]
-   Y = df.iloc[:,4:]
-   category_names = Y.columns
-   return X, Y, category_names
+    # load data from database
+    engine = create_engine('sqlite:/// DisasterResponse.db')
+    df = pd.read_sql_table('message_categorys', engine) 
+    X = df['message']
+    Y = df.iloc[:,4:]
+    category_names = Y.columns
+    return X, Y, category_names
 
 from nltk.corpus import stopwords
 url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
@@ -66,40 +66,44 @@ def tokenize(text):
     tokens = [lemmatizer.lemmatize(t) for t in tokens]
     
     return tokens
-    
-def build_model():
+def model_pipeline():
     pipeline = Pipeline([(
         'vect', CountVectorizer(tokenizer = tokenize)), 
         ('tfidf', TfidfTransformer()), 
         ('clf',MultiOutputClassifier(RandomForestClassifier()))])
     pipeline.get_params().keys()
-  #Split data into train and test sets
-   X_train, X_test, Y_train, Y_test = train_test_split(X, Y,random_state = 42)
-   pipeline.fit(X_train, Y_train)
-   return pipeline
+    #Split data into train and test sets
+    
+    return pipeline
+
+
+def build_model():
+    model = model_pipeline()
+    parameters = {'vect__min_df': [1, 5],'tfidf__use_idf':[True, False],'clf__estimator__n_estimators':[10, 25], 'clf__estimator__min_samples_split':[2, 5, 10]}
+    cv = GridSearchCV(estimator=model, param_grid=parameters, verbose=3)
+    
+    print('Best Parameters:', cv.param_grid)
+    return cv
+        
+        
+        
+        
+       
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    Y_pred = pipeline.predict(X_test)
+    Y_pred = model.predict(X_test)
     # Calculate the accuracy for each of them.
     for i in range(len(category_names)):
         print('Category: {} '.format(category_names[i]))
         print(classification_report(Y_test.iloc[:, i].values, Y_pred[:, i]))
         print('Accuracy {}\n\n'.format(accuracy_score(Y_test.iloc[:, i].values, Y_pred[:, i])))
         print('F1 {}\n\n'.format(f1_score(Y_test.iloc[:, i].values, Y_pred[:, i],average='weighted')))
-        print(classification_report(Y_test.iloc[:, 1:].values, np.array([x[1:] for x in Y_pred]), target_names = Y.columns))
+        # print(classification_report(Y_test.iloc[:, 1:].values, np.array([x[1:] for x in Y_pred]), target_names = Y.columns))
         # where is F-1 score is low, Lets see the distribution of class
-    Y.sum()/len(Y)
-    Category=df.columns[4:]
-    plt.figure(figsize=(20,10))
-    df[Category].sum().sort_values().plot.barh()
-    plt.title('The 36 categories that must be classified')
-    plt.ylabel('Categories')
-    plt.xlabel('Number of messages')#Improving the model as scoring in above model was not that efficent
+   
+    #Improving the model as scoring in above model was not that efficent
     #grid search
-    parameters = {'vect__min_df': [1, 5],'tfidf__use_idf':[True, False],'clf__estimator__n_estimators':[10, 25], 'clf__estimator__min_samples_split':[2, 5, 10]}
-    cv = GridSearchCV(estimator=pipeline, param_grid=parameters, verbose=3)
-    cv.fit(X_train, Y_train)
-    print('Best Parameters:', cv.best_params_)
+    
 
 def save_model(model, model_filepath):
     pickle.dump(cv, open('model_dis.sav', 'wb'))
