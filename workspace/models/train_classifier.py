@@ -40,7 +40,9 @@ import pickle
 
 def load_data(database_filepath):
     # load data from database
-    engine = create_engine('sqlite:/// DisasterResponse.db')
+    #engine = create_engine('sqlite:/// DisasterResponse.db')
+    #df = pd.read_sql_table('message_categorys', engine) 
+    engine = create_engine('sqlite:///{}'.format(database_filepath))
     df = pd.read_sql_table('message_categorys', engine) 
     X = df['message']
     Y = df.iloc[:,4:]
@@ -79,12 +81,18 @@ def model_pipeline():
 
 
 def build_model():
+    """
+    Build Model function
+    
+    This function returns a ML Pipeline that process text messages
+    according to NLP best-practice and apply a classifier.
+    """
     model = model_pipeline()
     parameters = {'vect__min_df': [1, 5],'tfidf__use_idf':[True, False],'clf__estimator__n_estimators':[10, 25], 'clf__estimator__min_samples_split':[2, 5, 10]}
-    cv = GridSearchCV(estimator=model, param_grid=parameters,cv=2, verbose=3)
+    #cv = GridSearchCV(estimator=model, param_grid=parameters,cv=2, verbose=3)
     
-    print('Best Parameters:', cv.param_grid)
-    return cv
+    #print('Best Parameters:', cv.param_grid)
+    return model
         
         
         
@@ -92,6 +100,18 @@ def build_model():
        
 
 def evaluate_model(model, X_test, Y_test, category_names):
+     """
+    Evaluate Model function
+    
+    This function use the provided ML pipeline to predict on a test set
+    and report the f1 score, precision and recall for each output category of the dataset
+    
+    Arguments:
+        model          - ML Pipeline
+        X_test         - test features
+        y_test         - test labels
+        category_names - label names (multi-output)
+    """
     Y_pred = model.predict(X_test)
     # Calculate the accuracy for each of them.
     for i in range(len(category_names)):
@@ -106,11 +126,26 @@ def evaluate_model(model, X_test, Y_test, category_names):
     #grid search
     
 
+# def save_model(model, model_filepath):
+#     pickle.dump(model, open('model_dis.sav', 'wb'))
+#     loaded_model = pickle.load(open('disaster_model.sav', 'rb'))
+#     Y_pred = loaded_model.predict(X_test)
+#     print(classification_report(Y_test.iloc[:, 1:].values, np.array([x[1:] for x in Y_pred]), target_names = Y.columns))
 def save_model(model, model_filepath):
-    pickle.dump(cv, open('model_dis.sav', 'wb'))
-    loaded_model = pickle.load(open('disaster_model.sav', 'rb'))
-    Y_pred = loaded_model.predict(X_test)
-    print(classification_report(Y_test.iloc[:, 1:].values, np.array([x[1:] for x in Y_pred]), target_names = Y.columns))
+    """
+    Save Model function
+    
+    This function saves trained model as Pickle file, to be loaded later.
+    
+    Arguments:
+        model          - GridSearchCV or Scikit Pipeline object
+        model_filepath - output pickle file path & name    
+    """
+    pickle.dump(model, open('classifier.pkl', 'wb'))
+    loaded_model = pickle.load(open('classifier.pkl', 'rb'))
+    #Y_pred = loaded_model.predict(X_test)
+    #print(classification_report(Y_test.iloc[:, 1:].values, np.array([x[1:] for x in Y_pred]), target_names = Y.columns))
+    
 
     
    
