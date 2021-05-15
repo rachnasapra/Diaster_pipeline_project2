@@ -63,4 +63,4 @@ run.py: Start the Python server for the web app and prepare visualizations.
     `python run.py`
 
 3. Go to http://0.0.0.0:3001/ General
-    https://view6914b2f4-3001.udacity-student-workspaces.com/%22(My web address with my space id.
+    https://view6914b2f4-3001.udacity-student-workspaces.com/%22    #My web address with my space id.
