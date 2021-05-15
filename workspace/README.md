@@ -3,6 +3,7 @@ In this Project Workspace, i used a data set containing real messages that were 
 
 The project include a web app where an emergency worker can input a new message and get classification results in several categories. The web app will also display visualizations of the data. This project will showed my software skills, including my ability to create basic data pipelines and write clean, organized code!
 
+https://github.com/rachnasapra/Diaster_pipeline_project2/blob/main/workspace/README.md
 
 # About Project in detail
 ## Data Pipelines: Jupyter Notebooks
